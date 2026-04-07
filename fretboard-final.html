@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Fretboard v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Sans:wght@400;500&family=Instrument+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e0c;--bg2:#161512;--bg3:#1e1c18;--bg4:#252320;--b:rgba(255,255,255,0.08);--b2:rgba(255,255,255,0.14);--tx:#f0ede6;--mu:#7a786f;--mu2:#5a5852;--go:#d4a84b;--go2:#b8902f;--gr:#4a9e72;--re:#c0503a;--bl:#4a7fc0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--tx);font-family:'Instrument Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+nav{display:flex;align-items:center;padding:0 14px;height:52px;border-bottom:1px solid var(--b);background:var(--bg);position:sticky;top:0;z-index:100;gap:8px;}
+.nlogo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--go);flex-shrink:0;}
+.ntabs{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;}
+.ntabs::-webkit-scrollbar{display:none;}
+.ntab{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:4px;color:var(--mu);cursor:pointer;border:none;background:transparent;white-space:nowrap;transition:all .15s;}
+.ntab:hover{color:var(--tx);background:var(--bg3);}
+.ntab.active{color:var(--go);background:rgba(212,168,75,.1);}
+.nright{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.psw{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--b2);border-radius:6px;padding:4px 10px;cursor:pointer;}
+.psw:hover{border-color:var(--go);}
+.pav{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:11px;color:#0f0e0c;flex-shrink:0;}
+.pnm{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--tx);max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.coachbtn{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:6px 13px;background:var(--go);color:#0f0e0c;border:none;border-radius:6px;cursor:pointer;}
+.coachbtn:hover{background:var(--go2);}
+.page{display:none;padding:22px 18px 80px;max-width:780px;margin:0 auto;}
+.page.active{display:block;}
+.ptitle{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;letter-spacing:-.03em;margin-bottom:3px;}
+.psub{font-size:13px;color:var(--mu);margin-bottom:22px;}
+.card{background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:16px;margin-bottom:12px;}
+.ctitle{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:10px;}
+.lbl{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mu);}
+.div{border:none;border-top:1px solid var(--b);margin:12px 0;}
+.tag{display:inline-block;font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:3px;background:var(--bg4);color:var(--mu);border:1px solid var(--b);}
+.tag.go{background:rgba(212,168,75,.1);color:var(--go);border-color:rgba(212,168,75,.2);}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--b2);border-radius:14px;padding:22px;max-width:480px;width:100%;position:relative;max-height:90vh;overflow-y:auto;}
+.mclose{position:absolute;top:12px;right:12px;background:var(--bg4);border:1px solid var(--b);border-radius:6px;color:var(--mu);width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;}
+.mclose:hover{color:var(--tx);}
+.mtitle{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.02em;margin-bottom:5px;}
+.msub{font-size:13px;color:var(--mu);margin-bottom:16px;line-height:1.5;}
+.fi{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:7px;padding:9px 12px;color:var(--tx);font-family:'Instrument Sans',sans-serif;font-size:13px;outline:none;margin-bottom:9px;}
+.fi:focus{border-color:var(--go);}
+.fi::placeholder{color:var(--mu2);}
+.fla{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin-bottom:5px;display:block;}
+.sbtn{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:10px 20px;background:var(--go);color:#0f0e0c;border:none;border-radius:7px;cursor:pointer;}
+.sbtn:hover{background:var(--go2);}
+.cbtn{font-family:'Instrument Mono',monospace;font-size:11px;padding:10px 14px;background:transparent;color:var(--mu);border:1px solid var(--b);border-radius:7px;cursor:pointer;margin-left:8px;}
+.cbtn:hover{color:var(--tx);}
+
+/* PROFILES */
+.plist{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+.pitem{display:flex;align-items:center;gap:11px;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:11px 13px;cursor:pointer;transition:all .15s;}
+.pitem:hover{border-color:var(--go);}
+.pitem.ap{border-color:var(--go);background:rgba(212,168,75,.06);}
+.piav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#0f0e0c;flex-shrink:0;}
+.piinfo{flex:1;}
+.piname{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:2px;}
+.pimeta{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--mu);}
+.pibadge{font-family:'Instrument Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(212,168,75,.1);color:var(--go);border:1px solid rgba(212,168,75,.2);}
+.piebtn{background:none;border:1px solid var(--b);border-radius:5px;color:var(--mu);cursor:pointer;font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;}
+.piebtn:hover{color:var(--go);border-color:rgba(212,168,75,.4);}
+.pidel{background:none;border:none;color:var(--mu2);cursor:pointer;font-size:16px;padding:3px;}
+.pidel:hover{color:var(--re);}
+.addbtn{width:100%;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:10px;background:transparent;color:var(--go);border:1px dashed rgba(212,168,75,.35);border-radius:8px;cursor:pointer;}
+.addbtn:hover{background:rgba(212,168,75,.06);}
+.eform{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--b);}
+.eform.open{display:block;}
+.nform{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--b);}
+.nform.open{display:block;}
+.cdot{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;display:inline-block;}
+.cdot:hover{transform:scale(1.15);}
+.cdot.sel{border-color:#fff;transform:scale(1.15);}
+.av-gold{background:#d4a84b;}.av-blue{background:#4a7fc0;}.av-green{background:#4a9e72;}.av-red{background:#c0503a;}.av-purple{background:#7c5cbf;}.av-teal{background:#3a9e9e;}
+
+/* TODAY */
+.thdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+.twk{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--go);margin-bottom:4px;}
+.ttask{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.02em;max-width:380px;line-height:1.2;}
+.sbadge{background:rgba(212,168,75,.1);border:1px solid rgba(212,168,75,.25);border-radius:8px;padding:9px 12px;text-align:center;flex-shrink:0;}
+.snum{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;color:var(--go);line-height:1;}
+.slbl{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin-top:2px;}
+.tdisplay{font-family:'Syne',sans-serif;font-weight:800;font-size:56px;letter-spacing:-.04em;line-height:1;text-align:center;}
+.tcontrols{display:flex;gap:9px;justify-content:center;margin-top:14px;}
+.tbtn{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:10px 22px;border-radius:7px;border:none;cursor:pointer;}
+.tstart{background:var(--go);color:#0f0e0c;}.tstart:hover{background:var(--go2);}
+.treset{background:var(--bg4);color:var(--mu);border:1px solid var(--b);}.treset:hover{color:var(--tx);}
+.donebtn{width:100%;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;padding:12px;background:var(--gr);color:#fff;border:none;border-radius:8px;cursor:pointer;margin-top:7px;}
+.squeue{display:flex;flex-direction:column;gap:7px;}
+.sitem{display:flex;align-items:center;gap:11px;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:10px 13px;cursor:pointer;}
+.sitem.done{opacity:.42;}
+.sitem.atask{border-color:var(--go);background:rgba(212,168,75,.06);}
+.schk{width:19px;height:19px;border-radius:50%;border:2px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.sitem.done .schk{background:var(--gr);border-color:var(--gr);}
+.schki{display:none;font-size:10px;color:#fff;}
+.sitem.done .schki{display:block;}
+.stxt{flex:1;font-size:13px;line-height:1.4;}
+.sdur{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--mu);flex-shrink:0;}
+
+/* TUNER */
+.tnote{font-family:'Syne',sans-serif;font-weight:800;font-size:82px;letter-spacing:-.04em;line-height:1;color:var(--tx);text-align:center;}
+.tnote.it{color:var(--gr);}.tnote.sh{color:var(--re);}.tnote.fl{color:var(--bl);}
+.tcents{font-family:'Instrument Mono',monospace;font-size:13px;color:var(--mu);margin-top:4px;height:18px;text-align:center;}
+.tmeter{position:relative;height:6px;background:var(--bg4);border-radius:3px;margin:14px auto;max-width:280px;}
+.tmbar{position:absolute;top:0;bottom:0;width:4px;border-radius:2px;background:var(--mu);transition:left .08s,background .2s;left:50%;}
+.tmctr{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--b2);}
+.tstat{font-size:13px;color:var(--mu);margin-top:5px;height:18px;text-align:center;}
+.tbtn2{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:10px 26px;border-radius:7px;border:none;cursor:pointer;margin:12px auto;display:block;}
+.tbtn2.ts{background:var(--go);color:#0f0e0c;}.tbtn2.ts:hover{background:var(--go2);}
+.tbtn2.tp{background:var(--bg4);color:var(--tx);border:1px solid var(--b2);}
+.sgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px;}
+.sbtn2{background:var(--bg3);border:1px solid var(--b);border-radius:6px;padding:8px 3px;text-align:center;cursor:pointer;}
+.sbtn2:hover,.sbtn2.active{border-color:var(--go);background:rgba(212,168,75,.08);}
+.sname{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+.snote{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--mu);margin-top:2px;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.listening{animation:pulse 1.4s ease-in-out infinite;}
+
+/* METRONOME */
+.mbpm{font-family:'Syne',sans-serif;font-weight:800;font-size:72px;letter-spacing:-.04em;color:var(--tx);text-align:center;}
+.mblbl{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mu);text-align:center;margin-top:2px;}
+.mbeats{display:flex;gap:10px;justify-content:center;margin:18px 0;}
+.mbeat{width:13px;height:13px;border-radius:50%;background:var(--bg4);border:1px solid var(--b2);}
+.mbeat.active{background:var(--go);transform:scale(1.25);border-color:var(--go);}
+.mbeat.accent{background:var(--re);transform:scale(1.35);border-color:var(--re);}
+.bslider{width:100%;appearance:none;height:4px;border-radius:2px;background:var(--bg4);outline:none;cursor:pointer;margin:12px 0;}
+.bslider::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--go);cursor:pointer;border:3px solid var(--bg2);}
+.mctrls{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:9px;}
+.mctrl{font-family:'Instrument Mono',monospace;font-size:10px;padding:7px 12px;border-radius:6px;border:1px solid var(--b2);background:var(--bg3);color:var(--tx);cursor:pointer;}
+.mctrl:hover{border-color:var(--go);color:var(--go);}
+.mstart{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;padding:11px 34px;background:var(--go);color:#0f0e0c;border:none;border-radius:8px;cursor:pointer;display:block;margin:12px auto 0;}
+.mstart:hover{background:var(--go2);}
+.mstart.running{background:var(--bg4);color:var(--tx);border:1px solid var(--b2);}
+
+/* CHORDS */
+.csearch{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:9px 12px;color:var(--tx);font-family:'Instrument Sans',sans-serif;font-size:13px;outline:none;margin-bottom:14px;}
+.csearch:focus{border-color:var(--go);}
+.csearch::placeholder{color:var(--mu2);}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px;}
+.ccard{background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:11px 9px;cursor:pointer;text-align:center;}
+.ccard:hover,.ccard.sel{border-color:var(--go);background:var(--bg4);}
+.cname{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;margin-bottom:2px;}
+.ctype{font-family:'Instrument Mono',monospace;font-size:9px;color:var(--mu);text-transform:uppercase;}
+.cdetail{background:var(--bg2);border:1px solid var(--b2);border-radius:10px;padding:16px;margin-bottom:12px;display:none;flex-wrap:wrap;gap:14px;align-items:flex-start;}
+.cdetail.vis{display:flex;}
+.cfing{font-family:'Instrument Mono',monospace;font-size:11px;color:var(--tx);margin-bottom:7px;line-height:1.9;white-space:pre;}
+.ctips{font-size:13px;color:var(--mu);line-height:1.6;max-width:250px;}
+
+/* SCALES */
+.scbtn{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;padding:6px 12px;border-radius:5px;border:1px solid var(--b2);background:var(--bg3);color:var(--mu);cursor:pointer;}
+.scbtn:hover{color:var(--tx);}
+.scbtn.active{background:rgba(212,168,75,.1);color:var(--go);border-color:rgba(212,168,75,.3);}
+.fbwrap{overflow-x:auto;padding-bottom:6px;}
+
+/* TRACKS */
+.tgrid{display:flex;flex-direction:column;gap:8px;}
+.titem{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:12px 14px;}
+.tinfo .tname{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:2px;}
+.tinfo .tmeta{font-family:'Instrument Mono',monospace;font-size:10px;color:var(--mu);}
+.topenbtn{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:5px;border:1px solid rgba(212,168,75,.3);background:rgba(212,168,75,.08);color:var(--go);cursor:pointer;white-space:nowrap;}
+.topenbtn:hover{background:rgba(212,168,75,.16);}
+
+/* TECHNIQUES */
+.ttabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.ttab{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;padding:6px 12px;border-radius:5px;border:1px solid var(--b2);background:var(--bg3);color:var(--mu);cursor:pointer;}
+.ttab:hover{color:var(--tx);}
+.ttab.active{background:rgba(212,168,75,.1);color:var(--go);border-color:rgba(212,168,75,.3);}
+.tcontent{display:none;}
+.tcontent.active{display:block;}
+.tstep{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--b);}
+.tstep:last-child{border-bottom:none;}
+.tsnum{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:rgba(212,168,75,.2);flex-shrink:0;width:26px;line-height:1;margin-top:2px;}
+.tstitle{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:2px;}
+.tsdesc{font-size:13px;color:var(--mu);line-height:1.55;}
+
+/* MILESTONES */
+.mlist{display:flex;flex-direction:column;gap:9px;}
+.mitem{display:flex;gap:13px;align-items:flex-start;background:var(--bg3);border:1px solid var(--b);border-radius:10px;padding:13px;}
+.mitem.un{border-color:rgba(74,158,114,.3);}
+.mitem.cu{border-color:rgba(212,168,75,.4);background:rgba(212,168,75,.04);}
+.miwrap{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;background:var(--bg4);}
+.mitem.cu .miwrap{background:rgba(212,168,75,.12);}
+.msong{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:1px;}
+.martist{font-size:12px;color:var(--mu);margin-bottom:5px;}
+.mmeta{display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+.mwtag{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--go);}
+.mstat{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:3px;}
+.sd{background:rgba(74,158,114,.15);color:var(--gr);}
+.sc{background:rgba(212,168,75,.12);color:var(--go);}
+.sl{background:var(--bg4);color:var(--mu2);}
+.pbar{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:6px;}
+.pbfill{height:100%;border-radius:2px;background:var(--go);}
+
+/* JOURNAL */
+.jtarea{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:10px 12px;color:var(--tx);font-family:'Instrument Sans',sans-serif;font-size:13px;resize:vertical;min-height:75px;outline:none;margin-bottom:7px;}
+.jtarea:focus{border-color:var(--go);}
+.jtarea::placeholder{color:var(--mu2);}
+.jsave{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;padding:8px 16px;background:var(--go);color:#0f0e0c;border:none;border-radius:6px;cursor:pointer;}
+.jitem{background:var(--bg3);border:1px solid var(--b);border-radius:7px;padding:10px 12px;margin-bottom:7px;}
+.jdate{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--go);margin-bottom:3px;}
+.jtext{font-size:13px;color:var(--tx);line-height:1.5;}
+
+/* REVIEW */
+.ritem{display:flex;align-items:center;gap:11px;cursor:pointer;padding:8px 0;}
+.rchk{width:17px;height:17px;border-radius:4px;border:2px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.ritem.ck .rchk{background:var(--gr);border-color:var(--gr);}
+.ritem.ck .rchk::after{content:'✓';font-size:10px;color:#fff;}
+.rtxt{font-size:13px;}
+.rnotes{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:10px 12px;color:var(--tx);font-family:'Instrument Sans',sans-serif;font-size:13px;resize:vertical;min-height:65px;outline:none;margin-top:9px;}
+.rnotes:focus{border-color:var(--go);}
+.rnotes::placeholder{color:var(--mu2);}
+.rsubmit{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:9px 20px;background:var(--go);color:#0f0e0c;border:none;border-radius:6px;cursor:pointer;margin-top:9px;}
+
+/* COACH */
+.coachta{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:10px 12px;color:var(--tx);font-family:'Instrument Sans',sans-serif;font-size:13px;resize:vertical;min-height:75px;outline:none;margin-bottom:11px;}
+.coachta:focus{border-color:var(--go);}
+.coachta::placeholder{color:var(--mu2);}
+.presets{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.preset{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.07em;text-transform:uppercase;padding:5px 10px;border-radius:4px;border:1px solid var(--b2);background:var(--bg3);color:var(--mu);cursor:pointer;}
+.preset:hover{color:var(--go);border-color:rgba(212,168,75,.3);}
+.coachopen{width:100%;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;padding:12px;background:var(--go);color:#0f0e0c;border:none;border-radius:8px;cursor:pointer;}
+.coachopen:hover{background:var(--go2);}
+.coachnote{font-size:11px;color:var(--mu2);text-align:center;margin-top:7px;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nlogo">Fretboard <span style="font-size:9px;opacity:.5;font-weight:400;">v3</span></div>
+  <div class="ntabs">
+    <button class="ntab active" onclick="showPage('today',this)">Today</button>
+    <button class="ntab" onclick="showPage('tuner',this)">Tuner</button>
+    <button class="ntab" onclick="showPage('metronome',this)">Metronome</button>
+    <button class="ntab" onclick="showPage('chords',this)">Chords</button>
+    <button class="ntab" onclick="showPage('scales',this)">Scales</button>
+    <button class="ntab" onclick="showPage('tracks',this)">Tracks</button>
+    <button class="ntab" onclick="showPage('techniques',this)">Techniques</button>
+    <button class="ntab" onclick="showPage('milestones',this)">Milestones</button>
+    <button class="ntab" onclick="showPage('journal',this)">Journal</button>
+    <button class="ntab" onclick="showPage('review',this)">Review</button>
+  </div>
+  <div class="nright">
+    <div class="psw" onclick="openProfiles()">
+      <div class="pav av-gold" id="nav-av">A</div>
+      <div class="pnm" id="nav-nm">Anthony</div>
+    </div>
+    <button class="coachbtn" onclick="openCoach()">Ask Coach →</button>
+  </div>
+</nav>
+
+<!-- TODAY -->
+<div class="page active" id="page-today">
+  <div class="thdr">
+    <div>
+      <div class="twk" id="today-wk">Week 1 · Foundation</div>
+      <div class="ttask" id="today-focus">Loading your plan...</div>
+    </div>
+    <div class="sbadge"><div class="snum" id="streak">0</div><div class="slbl">day streak</div></div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Session Timer</div>
+    <div style="text-align:center;padding:18px 0;">
+      <div class="tdisplay" id="timer">00:00</div>
+      <div class="tcontrols">
+        <button class="tbtn tstart" id="timer-btn" onclick="toggleTimer()">Start</button>
+        <button class="tbtn treset" onclick="resetTimer()">Reset</button>
+      </div>
+    </div>
+    <button class="donebtn" onclick="completeSession()">✓ Mark Session Complete</button>
+  </div>
+  <div class="card">
+    <div class="ctitle">Today's Tasks</div>
+    <div class="squeue" id="task-list"></div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Coach Tip</div>
+    <div style="font-size:13px;color:var(--mu);line-height:1.65;" id="coach-tip">Loading...</div>
+  </div>
+</div>
+
+<!-- TUNER -->
+<div class="page" id="page-tuner">
+  <div class="ptitle">Tuner</div><div class="psub">Chromatic — uses your microphone</div>
+  <div class="card">
+    <div class="ctitle">Select String</div>
+    <div class="sgrid">
+      <div class="sbtn2 active" onclick="selStr(this)"><div class="sname">E</div><div class="snote">6th·Low</div></div>
+      <div class="sbtn2" onclick="selStr(this)"><div class="sname">A</div><div class="snote">5th</div></div>
+      <div class="sbtn2" onclick="selStr(this)"><div class="sname">D</div><div class="snote">4th</div></div>
+      <div class="sbtn2" onclick="selStr(this)"><div class="sname">G</div><div class="snote">3rd</div></div>
+      <div class="sbtn2" onclick="selStr(this)"><div class="sname">B</div><div class="snote">2nd</div></div>
+      <div class="sbtn2" onclick="selStr(this)"><div class="sname">E</div><div class="snote">1st·Hi</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tnote" id="t-note">—</div>
+    <div class="tcents" id="t-cents"></div>
+    <div class="tmeter"><div class="tmctr"></div><div class="tmbar" id="t-bar" style="left:50%"></div></div>
+    <div class="tstat" id="t-stat">Press Start to listen</div>
+    <button class="tbtn2 ts" id="t-btn" onclick="toggleTuner()">Start Tuner</button>
+  </div>
+  <div class="card">
+    <div class="ctitle">Alternate Tunings</div>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:13px;font-weight:500;">Drop D</div><div style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--mu);margin-top:2px;">D A D G B E</div></div><span class="tag">Rock &amp; funk riffs</span></div>
+      <hr class="div" style="margin:3px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:13px;font-weight:500;">Open G</div><div style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--mu);margin-top:2px;">D G D G B D</div></div><span class="tag">Slide guitar</span></div>
+      <hr class="div" style="margin:3px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:13px;font-weight:500;">Half Step Down</div><div style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--mu);margin-top:2px;">Eb Ab Db Gb Bb Eb</div></div><span class="tag">Blues &amp; funk</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- METRONOME -->
+<div class="page" id="page-metronome">
+  <div class="ptitle">Metronome</div><div class="psub">Keep time. Build groove.</div>
+  <div class="card">
+    <div class="mbpm" id="bpm-disp">60</div><div class="mblbl">BPM</div>
+    <div class="mbeats"><div class="mbeat" id="b0"></div><div class="mbeat" id="b1"></div><div class="mbeat" id="b2"></div><div class="mbeat" id="b3"></div></div>
+    <input type="range" class="bslider" id="bslider" min="40" max="200" value="60" oninput="setBPM(this.value)">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span style="font-family:'Instrument Mono',monospace;font-size:10px;color:var(--mu);">40</span><span style="font-family:'Instrument Mono',monospace;font-size:10px;color:var(--mu);">200</span></div>
+    <div class="mctrls">
+      <button class="mctrl" onclick="adjBPM(-10)">−10</button><button class="mctrl" onclick="adjBPM(-5)">−5</button><button class="mctrl" onclick="adjBPM(-1)">−1</button>
+      <button class="mctrl" onclick="adjBPM(1)">+1</button><button class="mctrl" onclick="adjBPM(5)">+5</button><button class="mctrl" onclick="adjBPM(10)">+10</button>
+    </div>
+    <button class="mstart" id="metro-btn" onclick="toggleMetro()">Start</button>
+  </div>
+  <div class="card">
+    <div class="ctitle">Practice Tempos</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;justify-content:space-between;cursor:pointer;" onclick="setMetroBPM(60)"><div style="font-size:13px;">Learning speed</div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--mu);">60 BPM</span><span class="tag go">Start here</span></div></div>
+      <hr class="div" style="margin:3px 0">
+      <div style="display:flex;justify-content:space-between;cursor:pointer;" onclick="setMetroBPM(80)"><div style="font-size:13px;">Building confidence</div><span style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--mu);">80 BPM</span></div>
+      <hr class="div" style="margin:3px 0">
+      <div style="display:flex;justify-content:space-between;cursor:pointer;" onclick="setMetroBPM(100)"><div style="font-size:13px;">Bachata standard</div><span style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--mu);">100 BPM</span></div>
+      <hr class="div" style="margin:3px 0">
+      <div style="display:flex;justify-content:space-between;cursor:pointer;" onclick="setMetroBPM(120)"><div style="font-size:13px;">Salsa groove</div><span style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--mu);">120 BPM</span></div>
+      <hr class="div" style="margin:3px 0">
+      <div style="display:flex;justify-content:space-between;cursor:pointer;" onclick="setMetroBPM(72)"><div style="font-size:13px;">Better Together</div><span style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--mu);">72 BPM</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHORDS -->
+<div class="page" id="page-chords">
+  <div class="ptitle">Chord Library</div><div class="psub">Visual diagrams for every shape in your plan</div>
+  <input type="text" class="csearch" placeholder="Search chords..." oninput="filterChords(this.value)">
+  <div class="cdetail" id="chord-detail">
+    <canvas id="chord-canvas" width="138" height="166"></canvas>
+    <div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:24px;margin-bottom:7px;" id="cd-name"></div><div class="cfing" id="cd-fing"></div><div class="ctips" id="cd-tip"></div></div>
+  </div>
+  <div class="cgrid" id="chord-grid"></div>
+</div>
+
+<!-- SCALES -->
+<div class="page" id="page-scales">
+  <div class="ptitle">Scale Visualizer</div><div class="psub">See where every scale lives on the fretboard</div>
+  <div class="card">
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;" id="scale-btns">
+      <button class="scbtn active" onclick="selScale('pent',this)">Am Pentatonic</button>
+      <button class="scbtn" onclick="selScale('blues',this)">Am Blues</button>
+      <button class="scbtn" onclick="selScale('major',this)">C Major</button>
+      <button class="scbtn" onclick="selScale('dorian',this)">A Dorian</button>
+      <button class="scbtn" onclick="selScale('jazz',this)">Jazz Minor</button>
+    </div>
+    <div class="fbwrap"><canvas id="fb-canvas" width="680" height="168"></canvas></div>
+    <div style="font-size:13px;color:var(--mu);line-height:1.6;margin-top:10px;" id="scale-desc">The most important scale in guitar. Every riff you love lives here.</div>
+  </div>
+</div>
+
+<!-- TRACKS -->
+<div class="page" id="page-tracks">
+  <div class="ptitle">Backing Tracks</div><div class="psub">One tap to open the right track for your session</div>
+  <div class="card">
+    <div class="ctitle">By Style</div>
+    <div class="tgrid">
+      <div class="titem"><div class="tinfo"><div class="tname">Am Pentatonic Jam</div><div class="tmeta">Slow blues · 70 BPM · Maggot Brain practice</div></div><button class="topenbtn" onclick="openTrack('https://www.youtube.com/results?search_query=Am+pentatonic+backing+track+slow+blues+70+bpm')">Open ↗</button></div>
+      <div class="titem"><div class="tinfo"><div class="tname">Bachata Drum Track</div><div class="tmeta">120 BPM · Full percussion · Am groove</div></div><button class="topenbtn" onclick="openTrack('https://www.youtube.com/results?search_query=bachata+drum+track+120+bpm+guitar')">Open ↗</button></div>
+      <div class="titem"><div class="tinfo"><div class="tname">Salsa Clave Backing</div><div class="tmeta">120 BPM · Son clave · C major</div></div><button class="topenbtn" onclick="openTrack('https://www.youtube.com/results?search_query=salsa+guitar+backing+track+120+bpm')">Open ↗</button></div>
+      <div class="titem"><div class="tinfo"><div class="tname">Jazz — Autumn Leaves</div><div class="tmeta">Slow jazz · Am · Chord changes</div></div><button class="topenbtn" onclick="openTrack('https://www.youtube.com/results?search_query=autumn+leaves+guitar+backing+track+slow+jazz')">Open ↗</button></div>
+      <div class="titem"><div class="tinfo"><div class="tname">Funk Groove — E minor</div><div class="tmeta">95 BPM · Maggot Brain feel</div></div><button class="topenbtn" onclick="openTrack('https://www.youtube.com/results?search_query=funk+guitar+backing+track+E+minor+slow+groove')">Open ↗</button></div>
+      <div class="titem"><div class="tinfo"><div class="tname">Acoustic Fingerpicking</div><div class="tmeta">G major · Jack Johnson feel · 68 BPM</div></div><button class="topenbtn" onclick="openTrack('https://www.youtube.com/results?search_query=acoustic+fingerpicking+backing+track+G+major+slow')">Open ↗</button></div>
+      <div class="titem"><div class="tinfo"><div class="tname">Jazz Minor — Am</div><div class="tmeta">Easy jazz changes · chord comp practice</div></div><button class="topenbtn" onclick="openTrack('https://www.youtube.com/results?search_query=jazz+minor+backing+track+Am+guitar+slow')">Open ↗</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- TECHNIQUES -->
+<div class="page" id="page-techniques">
+  <div class="ptitle">Technique Library</div><div class="psub">Step-by-step guides for every skill in your plan</div>
+  <div class="ttabs">
+    <button class="ttab active" onclick="selTech('bend',this)">Bending</button>
+    <button class="ttab" onclick="selTech('vib',this)">Vibrato</button>
+    <button class="ttab" onclick="selTech('fp',this)">Fingerpicking</button>
+    <button class="ttab" onclick="selTech('mont',this)">Montuno</button>
+    <button class="ttab" onclick="selTech('bach',this)">Bachata</button>
+    <button class="ttab" onclick="selTech('pow',this)">Power Chords</button>
+  </div>
+  <div class="card">
+    <div class="tcontent active" id="tech-bend">
+      <div class="tstep"><div class="tsnum">1</div><div><div class="tstitle">Find the bend note</div><div class="tsdesc">G string, 7th fret. Use your ring finger. Place middle and index behind it — all three push together.</div></div></div>
+      <div class="tstep"><div class="tsnum">2</div><div><div class="tstitle">Push toward the ceiling</div><div class="tsdesc">Rotate your wrist (not just fingers) to push the string upward. A whole-step bend raises the pitch by 2 frets.</div></div></div>
+      <div class="tstep"><div class="tsnum">3</div><div><div class="tstitle">Hold and release slowly</div><div class="tsdesc">Bend to peak, hold 2 seconds, then release slowly. That slow release is the emotional core of blues and Maggot Brain.</div></div></div>
+      <div class="tstep"><div class="tsnum">4</div><div><div class="tstitle">Practice target</div><div class="tsdesc">10 clean bends, then add one to the end of a pentatonic phrase. The bend should feel like a sentence ending with a question.</div></div></div>
+    </div>
+    <div class="tcontent" id="tech-vib">
+      <div class="tstep"><div class="tsnum">1</div><div><div class="tstitle">Fret any note</div><div class="tsdesc">Use your ring finger on B or high e string. Support with middle and index behind it.</div></div></div>
+      <div class="tstep"><div class="tsnum">2</div><div><div class="tstitle">Micro-bend oscillation</div><div class="tsdesc">Push slightly sharp, release back to pitch, sharp again. Think of a singer wavering on a held note — that IS vibrato.</div></div></div>
+      <div class="tstep"><div class="tsnum">3</div><div><div class="tstitle">Wrist drives it</div><div class="tsdesc">Your wrist rotation powers vibrato, not your fingers. Think of turning a doorknob back and forth quickly.</div></div></div>
+      <div class="tstep"><div class="tsnum">4</div><div><div class="tstitle">Control the speed</div><div class="tsdesc">Slow vibrato = vocal and expressive. Fast = urgency. Learn slow first. Eddie Hazel uses slow wide vibrato on Maggot Brain.</div></div></div>
+    </div>
+    <div class="tcontent" id="tech-fp">
+      <div class="tstep"><div class="tsnum">1</div><div><div class="tstitle">Right hand position</div><div class="tsdesc">Thumb (p) → E, A, D strings. Index (i) → G. Middle (m) → B. Ring (a) → high e.</div></div></div>
+      <div class="tstep"><div class="tsnum">2</div><div><div class="tstitle">Basic pattern</div><div class="tsdesc">Thumb → Index → Middle → Ring → Middle → Index. Written: p-i-m-a-m-i. Hold G chord and loop this until automatic.</div></div></div>
+      <div class="tstep"><div class="tsnum">3</div><div><div class="tstitle">Thumb is the anchor</div><div class="tsdesc">Thumb always hits the root note of each chord. G = 6th string, C = 5th string, D = 4th string.</div></div></div>
+      <div class="tstep"><div class="tsnum">4</div><div><div class="tstitle">This is Banana Pancakes</div><div class="tsdesc">This exact pattern over G → C → Am → D is the intro and verse of Banana Pancakes. You're learning both simultaneously.</div></div></div>
+    </div>
+    <div class="tcontent" id="tech-mont">
+      <div class="tstep"><div class="tsnum">1</div><div><div class="tstitle">What is a montuno</div><div class="tsdesc">Short, percussive, off-beat strums that drive salsa. Choppy and tight, not smooth.</div></div></div>
+      <div class="tstep"><div class="tsnum">2</div><div><div class="tstitle">The rhythm</div><div class="tsdesc">Count: 1 + 2 + 3 + 4 +. Strum on the "and" of beats 2 and 3. Downbeats are often silent — off-beats are the accent.</div></div></div>
+      <div class="tstep"><div class="tsnum">3</div><div><div class="tstitle">Mute between strums</div><div class="tsdesc">After each strum, rest your strumming hand on the strings to mute them. The mute IS part of the sound.</div></div></div>
+      <div class="tstep"><div class="tsnum">4</div><div><div class="tstitle">Practice over clave</div><div class="tsdesc">Open Tracks → Salsa Clave. Start at 100 BPM. Feel your guitar lock with the clave. Then raise to 120.</div></div></div>
+    </div>
+    <div class="tcontent" id="tech-bach">
+      <div class="tstep"><div class="tsnum">1</div><div><div class="tstitle">The core progression</div><div class="tsdesc">Am – G – F – E. Every classic bachata is built on this. The E chord creates tension that wants to resolve to Am — that longing IS bachata.</div></div></div>
+      <div class="tstep"><div class="tsnum">2</div><div><div class="tstitle">The strum pattern</div><div class="tsdesc">Down–Down–Down–Down–Up with accent on beat 4. There's a tiny hesitation before the up strum — that rhythmic hiccup is the feel.</div></div></div>
+      <div class="tstep"><div class="tsnum">3</div><div><div class="tstitle">Two beats per chord</div><div class="tsdesc">Am (2 beats) → G (2) → F (2) → E (2). Once automatic, try 4 beats per chord for a slower, more spacious feel.</div></div></div>
+      <div class="tstep"><div class="tsnum">4</div><div><div class="tstitle">Over a drum track</div><div class="tsdesc">Open Tracks → Bachata Drum Track. Start at 90 BPM. Lock to the percussion. Raise to 100, then 120.</div></div></div>
+    </div>
+    <div class="tcontent" id="tech-pow">
+      <div class="tstep"><div class="tsnum">1</div><div><div class="tstitle">What is a power chord</div><div class="tsdesc">Just 2 notes: root + 5th. No major or minor quality — works over everything. Foundation of rock and funk.</div></div></div>
+      <div class="tstep"><div class="tsnum">2</div><div><div class="tstitle">The shape</div><div class="tsdesc">Index on root note (E or A string). Ring finger 2 frets up, 1 string down. That's it.</div></div></div>
+      <div class="tstep"><div class="tsnum">3</div><div><div class="tstitle">Move it anywhere</div><div class="tsdesc">Same shape everywhere. Index on 5th fret E string = A5. 7th fret = B5. The note follows your index finger.</div></div></div>
+      <div class="tstep"><div class="tsnum">4</div><div><div class="tstitle">Add gain</div><div class="tsdesc">Turn up the gain slightly on your electric. Strum just the 2 fretted strings. Palm muting adds a tight, punchy sound.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MILESTONES -->
+<div class="page" id="page-milestones">
+  <div class="ptitle">Milestones</div><div class="psub">Your song targets — updated from your profile</div>
+  <div class="card" style="margin-bottom:16px;">
+    <div class="lbl">Overall Progress</div>
+    <div style="margin-top:9px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:12px;color:var(--mu);" id="prog-lbl">Week 1 of 52</span><span style="font-family:'Instrument Mono',monospace;font-size:11px;color:var(--go);" id="prog-pct">2%</span></div>
+      <div class="pbar"><div class="pbfill" id="prog-fill" style="width:2%"></div></div>
+    </div>
+  </div>
+  <div class="mlist" id="milestone-list">
+    <div style="font-size:13px;color:var(--mu2);text-align:center;padding:20px 0;">Loading milestones...</div>
+  </div>
+</div>
+
+<!-- JOURNAL -->
+<div class="page" id="page-journal">
+  <div class="ptitle">Practice Journal</div><div class="psub">Log wins and struggles — your coach sees this</div>
+  <div class="card">
+    <div class="ctitle">Today's Entry</div>
+    <textarea class="jtarea" id="j-input" placeholder="What happened today? What clicked? What was hard?"></textarea>
+    <button class="jsave" onclick="saveJournal()">Save Entry</button>
+  </div>
+  <div class="card">
+    <div class="ctitle">Recent Entries</div>
+    <div id="j-log"><div style="font-size:13px;color:var(--mu2);text-align:center;padding:14px 0;">No entries yet.</div></div>
+  </div>
+</div>
+
+<!-- REVIEW -->
+<div class="page" id="page-review">
+  <div class="ptitle">Weekly Review</div><div class="psub">End-of-week check-in — opens your coach with context</div>
+  <div class="card">
+    <div class="ctitle">This Week</div>
+    <div id="rev-list">
+      <div class="ritem" onclick="toggleRev(this)"><div class="rchk"></div><div class="rtxt">I practiced at least 4 times this week</div></div>
+      <div class="ritem" onclick="toggleRev(this)"><div class="rchk"></div><div class="rtxt">I never went more than 3 days without touching the guitar</div></div>
+      <div class="ritem" onclick="toggleRev(this)"><div class="rchk"></div><div class="rtxt">My guitar is still on its stand, not in the case</div></div>
+      <div class="ritem" onclick="toggleRev(this)"><div class="rchk"></div><div class="rtxt">I know what my biggest improvement was this week</div></div>
+      <div class="ritem" onclick="toggleRev(this)"><div class="rchk"></div><div class="rtxt">I know what I want to focus on next week</div></div>
+      <div class="ritem" onclick="toggleRev(this)"><div class="rchk"></div><div class="rtxt">I played something that actually sounded like music</div></div>
+    </div>
+    <textarea class="rnotes" id="rev-notes" placeholder="Biggest win this week? What to focus on next? Your coach will see this."></textarea>
+    <button class="rsubmit" onclick="submitReview()">Send to Coach →</button>
+  </div>
+  <div class="card">
+    <div class="ctitle">Previous Reviews</div>
+    <div id="rev-history"><div style="font-size:13px;color:var(--mu2);text-align:center;padding:12px 0;">No reviews yet.</div></div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="overlay" id="prof-modal">
+  <div class="modal">
+    <button class="mclose" onclick="closeProfiles()">✕</button>
+    <div class="mtitle">Profiles</div>
+    <div class="msub">Switch players or edit goals. Each profile has its own plan, streak, and journal.</div>
+    <div class="plist" id="prof-list"></div>
+    <button class="addbtn" onclick="toggleNewForm()">+ Add New Profile</button>
+    <div class="nform" id="new-form">
+      <hr class="div">
+      <label class="fla">Name</label><input class="fi" id="nf-name" placeholder="e.g. Sarah">
+      <label class="fla">Artists you love</label><input class="fi" id="nf-artists" placeholder="e.g. Taylor Swift, John Mayer...">
+      <label class="fla">Songs you want to play</label><input class="fi" id="nf-songs" placeholder="e.g. Wonderwall, Hotel California...">
+      <label class="fla">Styles</label><input class="fi" id="nf-styles" placeholder="e.g. Pop, Blues, Classical...">
+      <label class="fla">Daily practice time</label><input class="fi" id="nf-time" placeholder="e.g. 10-15 minutes most evenings">
+      <div style="display:flex;gap:8px;margin-top:3px;">
+        <button class="sbtn" onclick="createProfile()">Create</button>
+        <button class="cbtn" onclick="toggleNewForm()">Cancel</button>
+      </div>
+    </div>
+    <div class="eform" id="edit-form">
+      <hr class="div">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;margin-bottom:10px;">Edit Profile</div>
+      <input type="hidden" id="ef-id">
+      <label class="fla">Name</label><input class="fi" id="ef-name" placeholder="Your name">
+      <label class="fla">Artists you want to sound like</label><input class="fi" id="ef-artists" placeholder="e.g. Jack Johnson, Funkadelic, Bad Bunny...">
+      <label class="fla">Songs you want to play</label><input class="fi" id="ef-songs" placeholder="e.g. Maggot Brain, Better Together...">
+      <label class="fla">Styles you want to learn</label><input class="fi" id="ef-styles" placeholder="e.g. Jazz, Bachata, Salsa, Fingerstyle...">
+      <label class="fla">Daily practice time</label><input class="fi" id="ef-time" placeholder="e.g. 5-10 minutes whenever I can">
+      <label class="fla">Current week (1–52)</label><input class="fi" id="ef-week" type="number" min="1" max="52">
+      <label class="fla">Notes for your coach</label><input class="fi" id="ef-notes" placeholder="e.g. Fingers still sore, nailed G→C today...">
+      <label class="fla">Avatar color</label>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <div class="cdot av-gold" data-c="av-gold" onclick="pickColor(this)"></div>
+        <div class="cdot av-blue" data-c="av-blue" onclick="pickColor(this)"></div>
+        <div class="cdot av-green" data-c="av-green" onclick="pickColor(this)"></div>
+        <div class="cdot av-red" data-c="av-red" onclick="pickColor(this)"></div>
+        <div class="cdot av-purple" data-c="av-purple" onclick="pickColor(this)"></div>
+        <div class="cdot av-teal" data-c="av-teal" onclick="pickColor(this)"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="sbtn" onclick="saveProfile()">Save Changes</button>
+        <button class="cbtn" onclick="closeEditForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COACH MODAL -->
+<div class="overlay" id="coach-modal">
+  <div class="modal">
+    <button class="mclose" onclick="closeCoach()">✕</button>
+    <div class="mtitle">Ask Your Coach</div>
+    <div class="msub">Opens Claude with your full profile, journal, and plan loaded.</div>
+    <div class="lbl" style="margin-bottom:7px;">Quick questions</div>
+    <div class="presets">
+      <button class="preset" onclick="setQ(this.textContent)">Why do my strings buzz?</button>
+      <button class="preset" onclick="setQ(this.textContent)">I skipped 4 days, what now?</button>
+      <button class="preset" onclick="setQ(this.textContent)">My fingers still hurt</button>
+      <button class="preset" onclick="setQ(this.textContent)">Add a new song I love</button>
+      <button class="preset" onclick="setQ(this.textContent)">I nailed this week's milestone</button>
+      <button class="preset" onclick="setQ(this.textContent)">I have 20 min today, what do I focus on?</button>
+      <button class="preset" onclick="setQ(this.textContent)">How do I get the Maggot Brain tone?</button>
+      <button class="preset" onclick="setQ(this.textContent)">Give me a full coaching check-in</button>
+    </div>
+    <div class="lbl" style="margin-bottom:7px;">Your question</div>
+    <textarea class="coachta" id="coach-q" placeholder="What do you want to ask your coach?"></textarea>
+    <button class="coachopen" onclick="launchCoach()">Open in Claude →</button>
+    <div class="coachnote">Opens claude.ai in a new tab with your full context pre-loaded.</div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// DATA — Style keywords, song pools, task bank
+// ================================================================
+const STYLE_KEYWORDS = {
+  latin:    ['bachata','salsa','latin','bad bunny','reggaeton','merengue','bossa','clave','montuno','spanish'],
+  jazz:     ['jazz','coltrane','miles','wes montgomery','bebop','swing','standards','autumn leaves'],
+  blues:    ['blues','bb king','stevie ray','clapton','muddy','pentatonic','bends','12 bar'],
+  acoustic: ['jack johnson','acoustic','fingerpick','fingerstyle','folk','unplugged','campfire','nylon'],
+  pop:      ['pop','taylor swift','ed sheeran','jason mraz','john mayer','passenger','catchy'],
+  rock:     ['rock','nirvana','led zeppelin','ac/dc','riff','power chord','distortion'],
+  classical:['classical','romanza','chet atkins','travis picking'],
+  funk:     ['funk','funkadelic','maggot brain','sly stone','james brown','groove'],
+};
+
+const STYLE_SONGS = {
+  latin:    {icon:'🌺', songs:['Bachata Groove (Am–G–F–E)','Salsa Montuno Pattern','Oye Como Va rhythm comp','La Bamba open chords']},
+  jazz:     {icon:'🎷', songs:['Autumn Leaves chord melody','All of Me jazz chords','Summertime voicings','Blue Bossa comp']},
+  blues:    {icon:'⚡', songs:['Maggot Brain feel (pentatonic + sustain)','12-bar blues rhythm','Sweet Home Chicago riff','Crossroads intro riff']},
+  acoustic: {icon:'🎸', songs:['Better Together – Jack Johnson','Banana Pancakes fingerstyle','Flake – Jack Johnson','Wish You Were Here intro']},
+  pop:      {icon:'🎵', songs:["Let Her Go – Passenger","I'm Yours – Jason Mraz","Thinking Out Loud chords","Stay With Me – Sam Smith"]},
+  rock:     {icon:'🔥', songs:['Seven Nation Army riff','Smoke on the Water riff','Back in Black intro','Come As You Are riff']},
+  classical:{icon:'🎼', songs:['Romanza fingerstyle','Greensleeves fingerpicking','Canon in D arpeggios','Spanish Romance intro']},
+  funk:     {icon:'🎸', songs:['Maggot Brain feel','Higher Ground groove','Super Freak rhythm','Give It Away chord stab']},
+};
+
+const TASKS = {
+  // weeks 1-10: foundation
+  1:  {focus:'Posture & first chord — Em', tip:'Your fingers will hurt — calluses are forming. Push through. Em = index and middle on A and D strings, 2nd fret. Keep the guitar on its stand, never the case.',
+       tasks:[{t:'Watch: how to hold acoustic guitar + how to fret properly. Practice sitting position.',d:'7 min'},{t:'Place fingers for Em chord. Strum once, check every string rings clean.',d:'5 min'},{t:'Em chord: place, strum, lift, replace. Repeat for the whole session.',d:'8 min'}]},
+  2:  {focus:'Add Am — first chord transition', tip:'Em and Am together are the backbone of dozens of songs. The transition is one of the most common moves in all of guitar.',
+       tasks:[{t:'Learn Am chord — 3 fingers on 1st and 2nd frets. Check each string rings.',d:'7 min'},{t:'Em → Am → Em → Am. 4 beats per chord. Count out loud.',d:'8 min'},{t:'Same transition, try to look away from your hand for 1 second at a time.',d:'6 min'}]},
+  3:  {focus:'G and C chords', tip:'G and C are in nearly every acoustic song. C chord buzzes at first — your ring finger needs to arch high. Repetition, not talent.',
+       tasks:[{t:'Learn G chord (3-finger version). Strum all 6 strings. Fix muted strings.',d:'7 min'},{t:'Learn C chord. Check each string after placing fingers.',d:'7 min'},{t:'G → C → G → C transition. The hardest switch this phase.',d:'8 min'}]},
+  4:  {focus:'D chord + metronome', tip:'Play slower than you think you need to. 60 BPM is deliberate — you want clean transitions before adding speed.',
+       tasks:[{t:'Learn D chord — diamond shape, top 4 strings only. Don\'t strum low E or A.',d:'6 min'},{t:'Open Metronome tab, set to 60 BPM. G → D → G → D, one chord per 4 beats.',d:'8 min'},{t:'G → C → D → G loop at 60 BPM. Foundation of dozens of songs.',d:'8 min'}]},
+  5:  {focus:'Strumming — D-D-U-U-D-U', tip:'Keep your strumming arm moving through chord switches — it\'s a pendulum, never fully stops.',
+       tasks:[{t:'Strum G chord: Down-Down-Up-Up-Down-Up at 60 BPM. Say the pattern out loud.',d:'7 min'},{t:'Same pattern, switching G → C halfway through. Keep strumming during switch.',d:'8 min'},{t:'G → C → D → G with full pattern. Don\'t stop when your hand moves.',d:'8 min'}]},
+  6:  {focus:'First milestone song — see Milestones tab', tip:'This is your first real song. Play it for someone. Even imperfect, it counts.',
+       tasks:[{t:'Find your milestone song on YouTube or Ultimate Guitar. Identify the chords.',d:'8 min'},{t:'Work through verse chord changes slowly at 60 BPM.',d:'8 min'},{t:'Play along with the song at 70% speed (YouTube speed controls).',d:'10 min'}]},
+  7:  {focus:'Consolidation + fingerpicking intro', tip:'Fingerpicking is a separate skill — your right hand learns a new language. Expect it to feel unnatural for 2–3 weeks.',
+       tasks:[{t:'Review all 5 chords (Em, Am, G, C, D) in random order.',d:'6 min'},{t:'Fingerpicking: Thumb → Index → Middle → Ring. Hold G chord, loop the pattern.',d:'8 min'},{t:'Same pattern over G → C → G. Slow and deliberate.',d:'8 min'}]},
+  8:  {focus:'Minor key progressions + style rhythm', tip:'The minor key has a different emotional character. The tension at the end of the progression is what makes it feel unresolved — that IS the music.',
+       tasks:[{t:'Learn Am–G–F–E. Play each chord clean, 2 beats each.',d:'7 min'},{t:'Open a backing track for your style (Tracks tab). Play the progression over it.',d:'8 min'},{t:'Play for 3 minutes straight without stopping. Let mistakes pass.',d:'5 min'}]},
+  9:  {focus:'Style milestone — see Milestones tab', tip:'You can now play a full rhythm groove in your style. Play it for someone — this is where practice becomes music.',
+       tasks:[{t:'Full groove in your primary style over matching backing track. 3 minutes straight.',d:'8 min'},{t:'Find a song in your style. Try to identify chord changes by ear.',d:'7 min'},{t:'Write a journal entry about what felt good today.',d:'3 min'}]},
+  10: {focus:'Electric guitar intro — power chords', tip:'Your acoustic work carries over 100%. Electric feels easier — lighter action, less pain.',
+       tasks:[{t:'Plug in, set gain low. Explore your controls for 5 minutes.',d:'5 min'},{t:'Power chords: E5, A5, D5, G5. Root + 5th, 2 fingers. Foundation of rock and funk.',d:'8 min'},{t:'Open Techniques tab → Power Chords. Work through all steps.',d:'7 min'}]},
+  // weeks 11-22: groove
+  11: {focus:'Pentatonic scale — position 1', tip:'This scale is the DNA of rock, blues, funk, and soul. Every riff you love started here.',
+       tasks:[{t:'Look up "Am pentatonic scale position 1." Memorize the shape — 2 notes per string.',d:'8 min'},{t:'Walk up and down the scale. Every note should ring clean.',d:'7 min'},{t:'Open Tracks → Am Pentatonic Jam. Play the scale slowly over it.',d:'8 min'}]},
+  12: {focus:'String bending', tip:'Bending is where technique becomes feeling. The slow release is the emotional core.',
+       tasks:[{t:'Open Techniques → Bending. Work through all steps.',d:'10 min'},{t:'G string 7th fret — push toward ceiling. Hold 2 seconds, release slowly.',d:'8 min'},{t:'End every pentatonic phrase with a bend.',d:'8 min'}]},
+  13: {focus:'Vibrato + sustain', tip:'Maggot Brain is emotionally complex, not technically complex. Vibrato and sustain put feeling into a single note.',
+       tasks:[{t:'Open Techniques → Vibrato. Work through all steps.',d:'8 min'},{t:'Fret any note. Add vibrato — wrist rotation. Slow oscillation.',d:'7 min'},{t:'Play one note. Let it sustain as long as possible. Add vibrato. Pause. Next note.',d:'9 min'}]},
+  14: {focus:'Fingerpicking development', tip:'Fingerpicking lives or dies by the thumb. Hit the root note and everything else falls into place.',
+       tasks:[{t:'Full fingerpicking pattern over G → C → Am → D. Thumb hits root note of each chord.',d:'8 min'},{t:'Look up your acoustic milestone song tab. Try matching the fingerpicking rhythm.',d:'8 min'},{t:'Play the pattern freely for 5 minutes. Don\'t think — just repeat.',d:'5 min'}]},
+  15: {focus:'7th chords — jazz colors', tip:'Jazz chords use 4 notes. That extra note adds richness. You don\'t need to understand the theory — just hear the difference.',
+       tasks:[{t:'Learn Am7 (x02010). Notice how it\'s softer and richer than plain Am.',d:'7 min'},{t:'Learn Dm7 (xx0211) and G7 (320001).',d:'8 min'},{t:'Am7 → Dm7 → G7 → Am7 at 60 BPM. Clean tone on electric.',d:'7 min'}]},
+  16: {focus:'Style deep dive — see Milestones tab', tip:'Phase 2. The foundation is solid. Now you start sounding like something specific.',
+       tasks:[{t:'Listen to your target milestone song 3 times with headphones.',d:'9 min'},{t:'Open matching backing track. Play freely — feel first.',d:'10 min'},{t:'Record yourself (voice memo). Find the best 20 seconds.',d:'8 min'}]},
+  17: {focus:'ii-V-I progression', tip:'The most common jazz chord movement in existence. Knowing it in one key unlocks dozens of songs.',
+       tasks:[{t:'ii-V-I in C major: Dm7 → G7 → Cmaj7. Play slowly, clean tone.',d:'8 min'},{t:'Minor ii-V-i in Am: Bm7b5 → E7 → Am.',d:'8 min'},{t:'Open Tracks → Jazz backing. Comp with these two progressions.',d:'6 min'}]},
+  18: {focus:'Rhythm — locking with a groove', tip:'Rhythm guitar is about locking with percussion, not leading it.',
+       tasks:[{t:'Open your primary style backing track. Focus only on staying in time.',d:'8 min'},{t:'Mute strings and practice the rhythm pattern silently. Feel the pulse.',d:'7 min'},{t:'Add chords back in. Your rhythm should feel identical to the silent version.',d:'8 min'}]},
+  19: {focus:'Scale runs + connecting positions', tip:'Moving between scale positions is how real solos are built.',
+       tasks:[{t:'Open Scales tab. Review pentatonic position 1. Play up and down 5 times clean.',d:'7 min'},{t:'Find the pattern starting 3 frets higher (position 2). Walk up it.',d:'8 min'},{t:'Connect them: go up position 1, slide into position 2, come back down.',d:'8 min'}]},
+  20: {focus:'Milestone song chord map', tip:'Learn the chord map before you try to play it. Knowing what\'s coming removes half the challenge.',
+       tasks:[{t:'Find your next milestone song chord chart. Memorize just the chord names in order.',d:'8 min'},{t:'Play through changes without rhythm — just placement and transitions.',d:'8 min'},{t:'Add strumming. 60% tempo. Don\'t stop for mistakes.',d:'9 min'}]},
+  21: {focus:'Ear training', tip:'Tab is training wheels. Ear training is how you learn any song without looking it up.',
+       tasks:[{t:'Put on a song you know. Find just the root note of the chorus on your guitar.',d:'8 min'},{t:'Once you have it, find the next chord\'s root note by ear.',d:'8 min'},{t:'Play a melody you know (Happy Birthday, anything) by ear on one string.',d:'6 min'}]},
+  22: {focus:'Phase 2 milestone', tip:'Phase 2 complete. You have rhythm, feel, theory, and real songs.',
+       tasks:[{t:'Play your Phase 2 milestone song, full tempo.',d:'10 min'},{t:'Record it.',d:'5 min'},{t:'Complete the Weekly Review.',d:'5 min'}]},
+};
+
+// Generate tasks for weeks beyond the bank
+function getTasksForWeek(week) {
+  if (TASKS[week]) return TASKS[week];
+  // Phase 3 (23-38) and Phase 4 (39-52) generic entries
+  const phases = {
+    3: {focus:'Song & style development', tip:'Phase 3 is about repertoire — music you can play for people.', tasks:[{t:'Work on your current milestone song. Play opening 8 bars 5 times clean.',d:'8 min'},{t:'Isolate the hardest 2-bar section and loop it.',d:'8 min'},{t:'Play the full song from start. Don\'t stop for mistakes.',d:'8 min'}]},
+    4: {focus:'Style & identity', tip:'You have the foundation. Follow your ear from here.', tasks:[{t:'Play freely for 10 minutes — no rules, no goals.',d:'10 min'},{t:'Improvise over a backing track for 5 minutes.',d:'8 min'},{t:'Play your full repertoire from memory.',d:'10 min'}]},
+  };
+  const phase = week <= 38 ? 3 : 4;
+  const d = phases[phase];
+  return {focus:`Week ${week} · ${d.focus}`, tip:d.tip, tasks:d.tasks};
+}
+
+// ================================================================
+// PLAN GENERATION — called every time profile is saved
+// ================================================================
+function buildPlan(profile) {
+  const text = [profile.artists||'', profile.songs||'', profile.styles||'', profile.notes||''].join(' ').toLowerCase();
+  
+  // Detect styles by keyword matching
+  const scores = {};
+  for (const [style, keys] of Object.entries(STYLE_KEYWORDS)) {
+    scores[style] = keys.filter(k => text.includes(k)).length;
+  }
+  const detectedStyles = Object.entries(scores).sort((a,b)=>b[1]-a[1]).filter(([,w])=>w>0).map(([s])=>s);
+  const styles = detectedStyles.length > 0 ? detectedStyles : ['acoustic','blues','latin','jazz'];
+
+  // Build milestones
+  const weekTargets = [6, 9, 16, 22, 28, 34, 44];
+  const milestones = [];
+  const seen = new Set();
+
+  // Always start with acoustic foundation song
+  milestones.push({week:6, song:'Better Together', artist:'Jack Johnson', icon:'🎸', desc:'Your first full song — simple chords, sounds great immediately.'});
+  seen.add('Better Together');
+
+  // Fill slots from detected styles
+  const pool = [...styles, ...styles, 'jazz', 'acoustic'];
+  let slot = 1;
+  for (const style of pool) {
+    if (slot >= weekTargets.length - 1) break;
+    const sp = STYLE_SONGS[style];
+    if (!sp) continue;
+    for (const song of sp.songs) {
+      if (seen.has(song)) continue;
+      seen.add(song);
+      milestones.push({week:weekTargets[slot], song, artist:styleName(style), icon:sp.icon, desc:styleDesc(style)});
+      slot++;
+      break;
+    }
+  }
+
+  // Always end with improv
+  milestones.push({week:44, song:'Full Improvised Solo', artist:'2 min free improv over any backing track', icon:'👑', desc:'The big one — improvise freely for 2 minutes and sound intentional.'});
+
+  // Determine session task count from time
+  const t = (profile.time||'').toLowerCase();
+  const taskCount = t.includes('30')||t.includes('hour')||t.includes('45') ? 4 : t.includes('15')||t.includes('20') ? 3 : 2;
+
+  return {styles, milestones: milestones.slice(0,7), taskCount, builtAt: Date.now()};
+}
+
+function styleName(s) {
+  const m = {latin:'Latin groove',jazz:'Jazz standard',blues:'Blues/Funk feel',acoustic:'Acoustic',pop:'Pop',rock:'Rock riff',classical:'Classical fingerstyle',funk:'Funk groove'};
+  return m[s]||s;
+}
+function styleDesc(s) {
+  const m = {latin:'Play this groove over a drum track for 3 minutes straight.',jazz:'Play the full chord progression of this jazz standard.',blues:'Capture the feel — pentatonic bends, sustain, emotion.',acoustic:'Play this song start to finish.',pop:'Play this song with full strumming pattern.',rock:'Learn this riff cleanly at full tempo.',classical:'Play this fingerstyle piece from memory.',funk:'Lock this groove over a backing track for 3 minutes.'};
+  return m[s]||'Play this song start to finish.';
+}
+
+// ================================================================
+// STATE — loaded fresh from localStorage every page load
+// ================================================================
+let S = {activeId: null, profiles: {}};
+const AVCOLS = ['av-gold','av-blue','av-green','av-red','av-purple','av-teal'];
+
+function getP() { return S.profiles[S.activeId] || null; }
+
+function persist() {
+  try {
+    localStorage.setItem('fb3', JSON.stringify({activeId: S.activeId, profiles: S.profiles}));
+  } catch(e) {
+    // localStorage blocked (sandboxed iframe) — state lives in memory only, still works
+  }
+}
+
+function init() {
+  // Try localStorage first (works on GitHub Pages)
+  try {
+    const raw = localStorage.getItem('fb3');
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (saved && saved.profiles && Object.keys(saved.profiles).length > 0) {
+        S.profiles = saved.profiles;
+        S.activeId = saved.activeId || Object.keys(saved.profiles)[0];
+        // Guarantee activeId actually points to a real profile
+        if (!S.profiles[S.activeId]) S.activeId = Object.keys(S.profiles)[0];
+        Object.values(S.profiles).forEach(p => {
+          p.journal = p.journal || [];
+          p.weeklyReviews = p.weeklyReviews || [];
+          p.streak = p.streak || 0;
+          p.week = p.week || 1;
+          p.plan = buildPlan(p);
+        });
+        renderAll();
+        return;
+      }
+    }
+  } catch(e) { /* localStorage blocked or empty — continue to default */ }
+
+  // Create default Anthony profile (works everywhere including sandboxed preview)
+  const p = makeProfile('Anthony', {
+    artists: 'Jack Johnson, Funkadelic, bachata & salsa artists',
+    songs: 'Better Together, Maggot Brain, Banana Pancakes, Autumn Leaves',
+    styles: 'Jazz, Bachata, Salsa, Acoustic fingerstyle, Blues/Funk',
+    time: '5-10 minutes, whenever I can',
+  });
+  p.avatarColor = 'av-gold';
+  S.profiles[p.id] = p;
+  S.activeId = p.id;
+  persist(); // no-op if localStorage blocked, fine
+  renderAll();
+}
+
+function makeProfile(name, extra) {
+  const p = {
+    id: Date.now().toString() + Math.random().toString(36).slice(2),
+    name: name||'Player',
+    avatarColor: AVCOLS[Math.floor(Math.random()*AVCOLS.length)],
+    artists: extra?.artists||'',
+    songs: extra?.songs||'',
+    styles: extra?.styles||'',
+    time: extra?.time||'5-10 min',
+    week: 1, streak: 0, journal: [], weeklyReviews: [], notes: '',
+    plan: null,
+  };
+  p.plan = buildPlan(p);
+  return p;
+}
+
+// ================================================================
+// RENDER ALL — single function that updates every dynamic element
+// ================================================================
+function renderAll() {
+  const p = getP();
+  if (!p) return;
+
+  // ---- Nav ----
+  const av = document.getElementById('nav-av');
+  av.textContent = p.name.charAt(0).toUpperCase();
+  av.className = 'pav ' + p.avatarColor;
+  document.getElementById('nav-nm').textContent = p.name;
+  document.getElementById('streak').textContent = p.streak || 0;
+
+  // ---- Today ----
+  const week = Math.max(1, Math.min(52, p.week||1));
+  const wd = getTasksForWeek(week);
+  const phase = week<=10?'Foundation':week<=22?'Groove & Theory':week<=38?'Songs & Style':'Style & Identity';
+  document.getElementById('today-wk').textContent = `Week ${week} · ${phase}`;
+  document.getElementById('today-focus').textContent = wd.focus;
+  document.getElementById('coach-tip').textContent = wd.tip;
+  const taskCount = p.plan ? p.plan.taskCount : 2;
+  document.getElementById('task-list').innerHTML = wd.tasks.slice(0, taskCount).map(t =>
+    `<div class="sitem" onclick="selTask(this)"><div class="schk"><span class="schki">✓</span></div><div class="stxt">${t.t}</div><div class="sdur">${t.d}</div></div>`
+  ).join('');
+
+  // ---- Milestones ----
+  const plan = p.plan;
+  if (!plan || !plan.milestones) return;
+  const milestones = plan.milestones;
+  const pct = Math.round((week/52)*100);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-lbl').textContent = `Week ${week} of 52`;
+  document.getElementById('prog-pct').textContent = pct+'%';
+  document.getElementById('milestone-list').innerHTML = milestones.map(m => {
+    const done = week > m.week;
+    const cur = !done && week >= m.week-5;
+    const cls = done?'un':cur?'cu':'';
+    const scls = done?'sd':cur?'sc':'sl';
+    const slbl = done?'Completed':cur?'In progress':'Locked';
+    const ppct = done?100:cur?Math.round(((week-(m.week-5))/5)*100):0;
+    return `<div class="mitem ${cls}">
+      <div class="miwrap">${m.icon}</div>
+      <div>
+        <div class="msong">${m.song}</div>
+        <div class="martist">${m.artist}</div>
+        <div class="mmeta"><span class="mwtag">Week ${m.week} target</span><span class="mstat ${scls}">${slbl}</span></div>
+        ${cur||done?`<div class="pbar" style="margin-top:7px;"><div class="pbfill" style="width:${ppct}%"></div></div>`:''}
+        <div style="font-size:12px;color:var(--mu2);margin-top:4px;line-height:1.4;">${m.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ---- Journal ----
+  const jlog = document.getElementById('j-log');
+  if (!p.journal || p.journal.length === 0) {
+    jlog.innerHTML = '<div style="font-size:13px;color:var(--mu2);text-align:center;padding:12px 0;">No entries yet.</div>';
+  } else {
+    jlog.innerHTML = p.journal.map(e => `<div class="jitem"><div class="jdate">${e.date}</div><div class="jtext">${e.text}</div></div>`).join('');
+  }
+
+  // ---- Review history ----
+  const rh = document.getElementById('rev-history');
+  if (!p.weeklyReviews || p.weeklyReviews.length === 0) {
+    rh.innerHTML = '<div style="font-size:13px;color:var(--mu2);text-align:center;padding:10px 0;">No reviews yet.</div>';
+  } else {
+    rh.innerHTML = p.weeklyReviews.map(r => `<div style="padding:9px 0;border-bottom:1px solid var(--b);"><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-family:'Instrument Mono',monospace;font-size:10px;color:var(--go);">Week ${r.week} · ${r.date}</span><span style="font-family:'Instrument Mono',monospace;font-size:10px;color:var(--mu);">${r.checks}/${r.total} checks</span></div>${r.notes?`<div style="font-size:13px;color:var(--mu);line-height:1.5;">${r.notes}</div>`:''}</div>`).join('');
+  }
+}
+
+// ================================================================
+// PROFILE MANAGEMENT
+// ================================================================
+function openProfiles() {
+  renderProfList();
+  document.getElementById('prof-modal').classList.add('open');
+}
+function closeProfiles() {
+  document.getElementById('prof-modal').classList.remove('open');
+  document.getElementById('edit-form').classList.remove('open');
+  document.getElementById('new-form').classList.remove('open');
+}
+function renderProfList() {
+  document.getElementById('prof-list').innerHTML = Object.values(S.profiles).map(p => `
+    <div class="pitem ${p.id===S.activeId?'ap':''}" onclick="switchProf('${p.id}')">
+      <div class="piav ${p.avatarColor}">${p.name.charAt(0).toUpperCase()}</div>
+      <div class="piinfo"><div class="piname">${p.name}</div><div class="pimeta">Week ${p.week} · ${p.streak} day streak</div></div>
+      ${p.id===S.activeId?'<span class="pibadge">Active</span>':''}
+      <button class="piebtn" onclick="openEdit(event,'${p.id}')">Edit</button>
+      ${Object.keys(S.profiles).length>1?`<button class="pidel" onclick="delProf(event,'${p.id}')">×</button>`:''}
+    </div>`).join('');
+}
+function switchProf(id) {
+  S.activeId = id;
+  persist();
+  renderAll();
+  closeProfiles();
+}
+function delProf(e, id) {
+  e.stopPropagation();
+  if (Object.keys(S.profiles).length <= 1) return;
+  if (!confirm('Delete this profile? All data will be lost.')) return;
+  delete S.profiles[id];
+  if (S.activeId === id) S.activeId = Object.keys(S.profiles)[0];
+  persist();
+  renderProfList();
+  renderAll();
+}
+function toggleNewForm() {
+  document.getElementById('edit-form').classList.remove('open');
+  document.getElementById('new-form').classList.toggle('open');
+}
+function createProfile() {
+  const name = document.getElementById('nf-name').value.trim();
+  if (!name) { alert('Please enter a name.'); return; }
+  const p = makeProfile(name, {
+    artists: document.getElementById('nf-artists').value.trim(),
+    songs: document.getElementById('nf-songs').value.trim(),
+    styles: document.getElementById('nf-styles').value.trim(),
+    time: document.getElementById('nf-time').value.trim(),
+  });
+  S.profiles[p.id] = p;
+  S.activeId = p.id;
+  persist();
+  renderAll();
+  ['nf-name','nf-artists','nf-songs','nf-styles','nf-time'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('new-form').classList.remove('open');
+  renderProfList();
+}
+
+// ---- EDIT PROFILE ----
+function openEdit(e, id) {
+  e.stopPropagation();
+  const p = S.profiles[id];
+  if (!p) return;
+  S.activeId = id; // ensure active profile matches what we're editing
+  document.getElementById('new-form').classList.remove('open');
+  document.getElementById('ef-id').value = id;
+  document.getElementById('ef-name').value = p.name||'';
+  document.getElementById('ef-artists').value = p.artists||'';
+  document.getElementById('ef-songs').value = p.songs||'';
+  document.getElementById('ef-styles').value = p.styles||'';
+  document.getElementById('ef-time').value = p.time||'';
+  document.getElementById('ef-week').value = p.week||1;
+  document.getElementById('ef-notes').value = p.notes||'';
+  document.querySelectorAll('.cdot').forEach(d => d.classList.toggle('sel', d.dataset.c===(p.avatarColor||'av-gold')));
+  document.getElementById('edit-form').classList.add('open');
+  document.getElementById('edit-form').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeEditForm() {
+  document.getElementById('edit-form').classList.remove('open');
+}
+function pickColor(dot) {
+  document.querySelectorAll('.cdot').forEach(d => d.classList.remove('sel'));
+  dot.classList.add('sel');
+}
+function saveProfile() {
+  // Get the id from the hidden field — fall back to S.activeId if blank
+  const id = document.getElementById('ef-id').value || S.activeId;
+  
+  // If still no id, try the first profile
+  const resolvedId = id || Object.keys(S.profiles)[0];
+  const p = S.profiles[resolvedId];
+  
+  if (!p) {
+    // Last resort: create a fresh profile with the entered data
+    alert('Could not find profile to update. Please try creating a new profile instead.');
+    return;
+  }
+
+  // Make sure S.activeId points to the profile we are editing
+  S.activeId = resolvedId;
+
+  // Update all fields
+  const nameVal = document.getElementById('ef-name').value.trim();
+  p.name    = nameVal || p.name;
+  p.artists = document.getElementById('ef-artists').value.trim();
+  p.songs   = document.getElementById('ef-songs').value.trim();
+  p.styles  = document.getElementById('ef-styles').value.trim();
+  p.time    = document.getElementById('ef-time').value.trim();
+  p.week    = Math.max(1, Math.min(52, parseInt(document.getElementById('ef-week').value) || 1));
+  p.notes   = document.getElementById('ef-notes').value.trim();
+  const selColor = document.querySelector('.cdot.sel');
+  if (selColor) p.avatarColor = selColor.dataset.c;
+
+  // Rebuild plan from updated profile data
+  p.plan = buildPlan(p);
+
+  // Save to localStorage (no-op if blocked) and re-render everything
+  persist();
+  renderAll();
+  renderProfList();
+  closeEditForm();
+  closeProfiles();
+}
+
+// ================================================================
+// TIMER
+// ================================================================
+let timerSecs = 0, timerRunning = false, timerInt = null;
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInt); timerRunning = false;
+    document.getElementById('timer-btn').textContent = 'Resume';
+  } else {
+    timerInt = setInterval(() => { timerSecs++; updTimer(); }, 1000);
+    timerRunning = true;
+    document.getElementById('timer-btn').textContent = 'Pause';
+  }
+}
+function resetTimer() {
+  clearInterval(timerInt); timerRunning = false; timerSecs = 0;
+  updTimer(); document.getElementById('timer-btn').textContent = 'Start';
+}
+function updTimer() {
+  const m = Math.floor(timerSecs/60).toString().padStart(2,'0');
+  const s = (timerSecs%60).toString().padStart(2,'0');
+  document.getElementById('timer').textContent = m+':'+s;
+}
+function completeSession() {
+  resetTimer();
+  const p = getP();
+  if (p) { p.streak = (p.streak||0)+1; persist(); document.getElementById('streak').textContent = p.streak; }
+  document.querySelectorAll('.sitem').forEach(i => { i.classList.add('done'); i.classList.remove('atask'); });
+}
+function selTask(el) {
+  document.querySelectorAll('.sitem').forEach(i => i.classList.remove('atask'));
+  if (!el.classList.contains('done')) el.classList.add('atask');
+  else el.classList.remove('done');
+}
+
+// ================================================================
+// TUNER
+// ================================================================
+const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+let tunerOn=false, tunerStream=null, tunerCtx=null, tunerAn=null, tunerAF=null;
+function selStr(el) { document.querySelectorAll('.sbtn2').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
+function toggleTuner() { tunerOn ? stopTuner() : startTuner(); }
+async function startTuner() {
+  try {
+    tunerStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    tunerCtx = new (window.AudioContext||window.webkitAudioContext)();
+    tunerAn = tunerCtx.createAnalyser(); tunerAn.fftSize=4096;
+    tunerCtx.createMediaStreamSource(tunerStream).connect(tunerAn);
+    tunerOn=true;
+    document.getElementById('t-btn').textContent='Stop Tuner'; document.getElementById('t-btn').className='tbtn2 tp';
+    document.getElementById('t-stat').textContent='Listening...'; document.getElementById('t-stat').classList.add('listening');
+    pitchLoop();
+  } catch(e) { document.getElementById('t-stat').textContent='Mic access denied'; }
+}
+function stopTuner() {
+  if(tunerStream) tunerStream.getTracks().forEach(t=>t.stop());
+  if(tunerCtx) tunerCtx.close();
+  if(tunerAF) cancelAnimationFrame(tunerAF);
+  tunerOn=false;
+  document.getElementById('t-note').textContent='—'; document.getElementById('t-note').className='tnote';
+  document.getElementById('t-cents').textContent=''; document.getElementById('t-stat').textContent='Press Start to listen';
+  document.getElementById('t-stat').classList.remove('listening');
+  document.getElementById('t-bar').style.left='50%'; document.getElementById('t-bar').style.background='var(--mu)';
+  document.getElementById('t-btn').textContent='Start Tuner'; document.getElementById('t-btn').className='tbtn2 ts';
+}
+function pitchLoop() {
+  if(!tunerOn) return;
+  const buf=new Float32Array(tunerAn.fftSize); tunerAn.getFloatTimeDomainData(buf);
+  const freq=autoCorr(buf,tunerCtx.sampleRate);
+  if(freq>0) {
+    const midi=12*Math.log2(freq/440)+69, r=Math.round(midi), cents=Math.round((midi-r)*100);
+    const note=NOTES[((r%12)+12)%12];
+    document.getElementById('t-note').textContent=note;
+    document.getElementById('t-cents').textContent=cents===0?'In tune ✓':cents>0?`+${cents}¢ sharp`:`${cents}¢ flat`;
+    const pct=Math.max(5,Math.min(95,50+cents*0.4));
+    document.getElementById('t-bar').style.left=pct+'%';
+    const it=Math.abs(cents)<=5;
+    document.getElementById('t-note').className='tnote'+(it?' it':cents>5?' sh':' fl');
+    document.getElementById('t-bar').style.background=it?'var(--gr)':cents>5?'var(--re)':'var(--bl)';
+    document.getElementById('t-stat').textContent=it?'✓ In Tune':cents>5?'Tune down ↓':'Tune up ↑';
+  }
+  tunerAF=requestAnimationFrame(pitchLoop);
+}
+function autoCorr(buf,sr) {
+  let n=buf.length,rms=0;
+  for(let i=0;i<n;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/n);
+  if(rms<0.01) return -1;
+  let r1=0,r2=n-1,th=0.2;
+  for(let i=0;i<n/2;i++){if(Math.abs(buf[i])<th){r1=i;break;}}
+  for(let i=1;i<n/2;i++){if(Math.abs(buf[n-i])<th){r2=n-i;break;}}
+  buf=buf.slice(r1,r2); n=buf.length;
+  const c=new Array(n).fill(0);
+  for(let i=0;i<n;i++) for(let j=0;j<n-i;j++) c[i]+=buf[j]*buf[j+i];
+  let d=0; while(c[d]>c[d+1]) d++;
+  let mx=-1,mp=-1;
+  for(let i=d;i<n;i++){if(c[i]>mx){mx=c[i];mp=i;}}
+  let T=mp; const x1=c[T-1],x2=c[T],x3=c[T+1],a=(x1+x3-2*x2)/2,b=(x3-x1)/2;
+  if(a) T=T-b/(2*a);
+  return sr/T;
+}
+
+// ================================================================
+// METRONOME
+// ================================================================
+let bpm=60,metroOn=false,metroInt=null,metroBeat=0,audioCtx=null;
+function getAC(){if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)(); return audioCtx;}
+function click(acc){const ctx=getAC(),o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=acc?1400:900;g.gain.setValueAtTime(acc?0.7:0.45,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.08);o.start(ctx.currentTime);o.stop(ctx.currentTime+0.1);}
+function toggleMetro(){metroOn?stopMetro():startMetro();}
+function startMetro(){metroOn=true;metroBeat=0;document.getElementById('metro-btn').textContent='Stop';document.getElementById('metro-btn').classList.add('running');tick();metroInt=setInterval(tick,(60/bpm)*1000);}
+function stopMetro(){clearInterval(metroInt);metroOn=false;document.getElementById('metro-btn').textContent='Start';document.getElementById('metro-btn').classList.remove('running');document.querySelectorAll('.mbeat').forEach(b=>b.classList.remove('active','accent'));}
+function tick(){document.querySelectorAll('.mbeat').forEach(b=>b.classList.remove('active','accent'));const b=document.getElementById('b'+metroBeat);if(b){if(metroBeat===0){b.classList.add('accent');click(true);}else{b.classList.add('active');click(false);}}metroBeat=(metroBeat+1)%4;}
+function setBPM(v){bpm=parseInt(v);document.getElementById('bpm-disp').textContent=bpm;if(metroOn){stopMetro();startMetro();}}
+function adjBPM(d){const n=Math.max(40,Math.min(200,bpm+d));document.getElementById('bslider').value=n;setBPM(n);}
+function setMetroBPM(v){document.getElementById('bslider').value=v;setBPM(v);}
+
+// ================================================================
+// CHORDS
+// ================================================================
+const CHORDS=[
+  {name:'Em',type:'Minor',fingers:'E: open\nA: 2nd (M)\nD: 2nd (R)\nG: open\nB: open\ne: open',tip:'Your first chord. Index and middle on A and D, 2nd fret. Strum all 6 strings.',dots:[[5,2,'M'],[4,2,'R']]},
+  {name:'Am',type:'Minor',fingers:'E: mute\nA: open\nD: 2nd (M)\nG: 2nd (R)\nB: 1st (I)\ne: open',tip:'Index on B 1st fret, middle on D, ring on G at 2nd fret.',dots:[[4,2,'M'],[3,2,'R'],[2,1,'I']]},
+  {name:'G',type:'Major',fingers:'E: 3rd (M)\nA: 2nd (I)\nD: open\nG: open\nB: open\ne: 3rd (R)',tip:'Index on A 2nd fret, middle on E 3rd fret, ring on high e 3rd fret.',dots:[[6,3,'M'],[5,2,'I'],[1,3,'R']]},
+  {name:'C',type:'Major',fingers:'E: mute\nA: 3rd (R)\nD: 2nd (M)\nG: open\nB: 1st (I)\ne: open',tip:'Ring on A 3rd fret, middle on D 2nd fret, index on B 1st fret.',dots:[[5,3,'R'],[4,2,'M'],[2,1,'I']]},
+  {name:'D',type:'Major',fingers:'E: mute\nA: mute\nD: open\nG: 2nd (I)\nB: 3rd (R)\ne: 2nd (M)',tip:'Diamond shape on top 4 strings only. Don\'t strum low E or A.',dots:[[3,2,'I'],[2,3,'R'],[1,2,'M']]},
+  {name:'Am7',type:'Min 7',fingers:'E: mute\nA: open\nD: 2nd (M)\nG: open\nB: 1st (I)\ne: open',tip:'Like Am but lift your ring finger. Softer, jazzier sound.',dots:[[4,2,'M'],[2,1,'I']]},
+  {name:'Dm7',type:'Min 7',fingers:'E: mute\nA: mute\nD: open\nG: 2nd (M)\nB: 1st (I)\ne: 1st (I)',tip:'Barre index across top 3 strings at 1st fret. Middle on G at 2nd fret.',dots:[[3,2,'M'],[2,1,'I'],[1,1,'I']]},
+  {name:'G7',type:'Dom 7',fingers:'E: 3rd (M)\nA: 2nd (I)\nD: open\nG: open\nB: open\ne: 1st (R)',tip:'G chord but add ring finger on high e at 1st fret. Resolves to C.',dots:[[6,3,'M'],[5,2,'I'],[1,1,'R']]},
+  {name:'Fmaj7',type:'Maj 7',fingers:'E: mute\nA: mute\nD: 3rd (R)\nG: 2nd (M)\nB: 1st (I)\ne: open',tip:'Beginner substitute for barre F. Works in most Jack Johnson songs.',dots:[[4,3,'R'],[3,2,'M'],[2,1,'I']]},
+  {name:'E',type:'Major',fingers:'E: open\nA: 2nd (M)\nD: 2nd (R)\nG: 1st (I)\nB: open\ne: open',tip:'Like Em but add index on G string 1st fret. V chord in bachata.',dots:[[5,2,'M'],[4,2,'R'],[3,1,'I']]},
+  {name:'Cmaj7',type:'Maj 7',fingers:'E: mute\nA: 3rd (R)\nD: 2nd (M)\nG: open\nB: open\ne: open',tip:'Jazz voicing of C. Lift your index from B. Lush sound.',dots:[[5,3,'R'],[4,2,'M']]},
+  {name:'F',type:'Major',fingers:'E: 1st (B)\nA: 3rd (R)\nD: 3rd (P)\nG: 2nd (M)\nB: 1st (B)\ne: 1st (B)',tip:'The barre chord. Index bars all strings at 1st fret. Build up gradually.',dots:[[5,3,'R'],[4,3,'P'],[3,2,'M']],barre:1},
+];
+function filterChords(v){renderChords(v);}
+function renderChords(filter=''){
+  document.getElementById('chord-grid').innerHTML=CHORDS.filter(c=>c.name.toLowerCase().includes(filter.toLowerCase())||c.type.toLowerCase().includes(filter.toLowerCase())).map((c,i)=>`<div class="ccard" onclick="selChord(${CHORDS.indexOf(c)})" id="cc${CHORDS.indexOf(c)}"><div class="cname">${c.name}</div><div class="ctype">${c.type}</div></div>`).join('');
+}
+function selChord(i){
+  document.querySelectorAll('.ccard').forEach(c=>c.classList.remove('sel'));
+  const el=document.getElementById('cc'+i); if(el) el.classList.add('sel');
+  const c=CHORDS[i];
+  document.getElementById('cd-name').textContent=c.name+' ('+c.type+')';
+  document.getElementById('cd-fing').textContent=c.fingers;
+  document.getElementById('cd-tip').textContent=c.tip;
+  drawChord(c);
+  document.getElementById('chord-detail').classList.add('vis');
+}
+function drawChord(chord){
+  const cv=document.getElementById('chord-canvas'),ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,138,166);
+  const sx=18,sy=30,sg=17,fg=23;
+  ctx.strokeStyle='#5a5852'; ctx.lineWidth=0.8;
+  for(let s=0;s<6;s++){ctx.beginPath();ctx.moveTo(sx+s*sg,sy);ctx.lineTo(sx+s*sg,sy+5*fg);ctx.stroke();}
+  for(let f=0;f<=5;f++){ctx.beginPath();ctx.lineWidth=f===0?2:0.8;ctx.strokeStyle=f===0?'#f0ede6':'#5a5852';ctx.moveTo(sx,sy+f*fg);ctx.lineTo(sx+5*sg,sy+f*fg);ctx.stroke();}
+  if(chord.barre){ctx.fillStyle='rgba(212,168,75,.3)';ctx.fillRect(sx-3,sy+(chord.barre-.5)*fg-7,5*sg+6,14);}
+  (chord.dots||[]).forEach(([s,f,fn])=>{const x=sx+(6-s)*sg,y=sy+(f-.5)*fg;ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fillStyle='#d4a84b';ctx.fill();ctx.fillStyle='#0f0e0c';ctx.font='8px Instrument Mono';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(fn,x,y);});
+  const lbs=['e','B','G','D','A','E'];
+  ctx.fillStyle='#7a786f';ctx.font='9px sans-serif';ctx.textAlign='center';
+  lbs.forEach((l,i)=>ctx.fillText(l,sx+i*sg,sy-10));
+}
+
+// ================================================================
+// SCALES
+// ================================================================
+const SCALES={
+  pent:{desc:'The most important scale in guitar. Every riff you love lives here. Two notes per string. Learn position 1 and you\'re 80% of the way there.',notes:[[1,5],[1,8],[2,5],[2,8],[3,5],[3,7],[4,5],[4,7],[5,5],[5,7],[6,5],[6,8]],roots:[[1,5],[2,5],[3,5],[4,5],[5,7],[6,5]]},
+  blues:{desc:'Pentatonic + the blue note (★). That one extra note adds gritty, soulful tension. Use it sparingly for maximum effect.',notes:[[1,5],[1,8],[2,5],[2,8],[3,4],[3,5],[3,7],[4,5],[4,6],[4,7],[5,5],[5,7],[6,5],[6,8]],roots:[[1,5],[2,5],[3,5],[4,5],[5,7],[6,5]],blue:[[3,4],[4,6]]},
+  major:{desc:'The foundational scale of Western music. All happy, resolved sounds come from here. C major shares all notes with A natural minor.',notes:[[1,5],[1,7],[1,8],[2,5],[2,6],[2,8],[3,5],[3,7],[4,5],[4,7],[5,5],[5,7],[6,5],[6,7],[6,8]],roots:[[1,8],[2,5],[3,5],[4,5],[5,7],[6,8]]},
+  dorian:{desc:'Minor scale with a raised 6th. Sounds minor but with brightness. Perfect for jazz fusion, Latin, and funk. Santana uses this constantly.',notes:[[1,5],[1,7],[1,9],[2,5],[2,7],[2,9],[3,5],[3,6],[3,9],[4,5],[4,7],[5,5],[5,7],[6,5],[6,7]],roots:[[1,5],[2,5],[3,5],[4,5],[5,7],[6,5]]},
+  jazz:{desc:'Melodic minor scale — sophisticated and tense. Underneath Autumn Leaves and most jazz standards.',notes:[[1,5],[1,7],[1,8],[2,5],[2,7],[2,8],[3,4],[3,5],[3,7],[4,5],[4,7],[5,5],[5,7],[6,5],[6,7]],roots:[[1,5],[2,5],[3,5],[4,5],[5,7],[6,5]]},
+};
+let curScale='pent';
+function selScale(k,btn){curScale=k;document.querySelectorAll('.scbtn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');drawFB();document.getElementById('scale-desc').textContent=SCALES[k].desc;}
+function drawFB(){
+  const cv=document.getElementById('fb-canvas'),ctx=cv.getContext('2d');
+  const W=680,H=168,lp=34,rp=14,tp=18,bp=18,nf=12,ns=6;
+  const fw=(W-lp-rp)/nf,sh=(H-tp-bp)/(ns-1);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#1a1710';ctx.fillRect(lp,tp,W-lp-rp,H-tp-bp);
+  [3,5,7,9,12].forEach(f=>{const x=lp+(f-.5)*fw,y=H/2;ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.07)';ctx.fill();});
+  for(let f=0;f<=nf;f++){const x=lp+f*fw;ctx.beginPath();ctx.moveTo(x,tp);ctx.lineTo(x,H-bp);ctx.strokeStyle=f===0?'#c0a060':'rgba(255,255,255,.13)';ctx.lineWidth=f===0?3:0.8;ctx.stroke();}
+  const th=[1,1,1.2,1.4,1.8,2.2];
+  for(let s=0;s<ns;s++){const y=tp+s*sh;ctx.beginPath();ctx.moveTo(lp,y);ctx.lineTo(W-rp,y);ctx.strokeStyle='rgba(200,190,160,.45)';ctx.lineWidth=th[s];ctx.stroke();}
+  ['e','B','G','D','A','E'].forEach((l,i)=>{ctx.fillStyle='#7a786f';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText(l,lp-13,tp+i*sh+4);});
+  for(let f=1;f<=nf;f++){ctx.fillStyle='#5a5852';ctx.font='9px monospace';ctx.fillText(f,lp+(f-.5)*fw,H-4);}
+  const sc=SCALES[curScale];
+  const blueSet=new Set((sc.blue||[]).map(n=>n.join(',')));
+  const rootSet=new Set(sc.roots.map(n=>n.join(',')));
+  sc.notes.forEach(([s,f])=>{const x=lp+(f-.5)*fw,y=tp+(s-1)*sh,k=[s,f].join(',');const isR=rootSet.has(k),isB=blueSet.has(k);ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.fillStyle=isR?'#d4a84b':isB?'#c0503a':'#e8e4db';ctx.fill();ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=1;ctx.stroke();if(isB){ctx.fillStyle='#fff';ctx.font='bold 9px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',x,y);}});
+}
+
+// ================================================================
+// TECHNIQUES
+// ================================================================
+function selTech(id,btn){document.querySelectorAll('.tcontent').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.ttab').forEach(t=>t.classList.remove('active'));document.getElementById('tech-'+id).classList.add('active');if(btn)btn.classList.add('active');}
+
+// ================================================================
+// TRACKS
+// ================================================================
+function openTrack(url){window.open(url,'_blank');}
+
+// ================================================================
+// JOURNAL
+// ================================================================
+function saveJournal(){
+  const text=document.getElementById('j-input').value.trim();
+  if(!text) return;
+  const p=getP(); if(!p) return;
+  p.journal.unshift({date:new Date().toLocaleDateString(),text});
+  if(p.journal.length>30) p.journal=p.journal.slice(0,30);
+  persist();
+  document.getElementById('j-input').value='';
+  renderAll();
+}
+
+// ================================================================
+// WEEKLY REVIEW
+// ================================================================
+function toggleRev(el){el.classList.toggle('ck');}
+function submitReview(){
+  const checks=[...document.querySelectorAll('.ritem')].filter(i=>i.classList.contains('ck')).length;
+  const total=document.querySelectorAll('.ritem').length;
+  const notes=document.getElementById('rev-notes').value.trim();
+  const p=getP(); if(!p) return;
+  p.weeklyReviews.unshift({date:new Date().toLocaleDateString(),week:p.week,checks,total,notes});
+  if(p.weeklyReviews.length>20) p.weeklyReviews=p.weeklyReviews.slice(0,20);
+  p.week=Math.min(52,(p.week||1)+1);
+  persist();
+  renderAll();
+  document.querySelectorAll('.ritem').forEach(i=>i.classList.remove('ck'));
+  document.getElementById('rev-notes').value='';
+  const q=`I just completed Week ${p.week-1} review. Checked ${checks}/${total} items.${notes?' Notes: '+notes:''} What should I focus on next week?`;
+  document.getElementById('coach-q').value=q;
+  openCoach();
+}
+
+// ================================================================
+// COACH
+// ================================================================
+function openCoach(){document.getElementById('coach-modal').classList.add('open');}
+function closeCoach(){document.getElementById('coach-modal').classList.remove('open');}
+function setQ(t){document.getElementById('coach-q').value=t;}
+function launchCoach(){
+  const p=getP();
+  const q=document.getElementById('coach-q').value;
+  const journal=(p?.journal||[]).slice(0,5).map(e=>`[${e.date}] ${e.text}`).join('\n')||'No entries yet.';
+  const lastRev=(p?.weeklyReviews||[])[0];
+  const prompt=`You are a personalized guitar coach for ${p?.name||'the student'}. Here is their full profile:
+
+PROFILE:
+- Name: ${p?.name}
+- Current week: ${p?.week} of 52
+- Practice time: ${p?.time}
+- Day streak: ${p?.streak}
+- Artists: ${p?.artists}
+- Songs to learn: ${p?.songs}
+- Styles: ${p?.styles}
+- Notes: ${p?.notes}
+
+CURRENT PLAN STYLES: ${p?.plan?.styles?.join(', ')||'Not yet generated'}
+
+MILESTONES:
+${(p?.plan?.milestones||[]).map(m=>`- Week ${m.week}: ${m.song}`).join('\n')}
+
+RECENT JOURNAL:
+${journal}
+
+LAST WEEKLY REVIEW: ${lastRev?`Week ${lastRev.week} (${lastRev.date}) — ${lastRev.checks}/${lastRev.total} checks. ${lastRev.notes||''}` : 'None yet.'}
+
+---
+Question: ${q||'Give me a coaching check-in for where I am and what to focus on next.'}
+
+Respond as their guitar coach — warm, specific, practical. Reference their goals and current week. Keep advice actionable for ${p?.time||'short'} practice sessions.`;
+  window.open('https://claude.ai/new?q='+encodeURIComponent(prompt),'_blank');
+  closeCoach();
+}
+
+// ================================================================
+// NAV
+// ================================================================
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+// Close modals on overlay click
+window.addEventListener('click', e => {
+  if(e.target===document.getElementById('prof-modal')) closeProfiles();
+  if(e.target===document.getElementById('coach-modal')) closeCoach();
+});
+
+// ================================================================
+// BOOT
+// ================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Debug: expose state globally so browser console can inspect it
+  window._S = S;
+  window._renderAll = renderAll;
+  window._buildPlan = buildPlan;
+  init();
+  renderChords();
+  drawFB();
+});
+</script>
+</body>
+</html>
